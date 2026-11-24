@@ -1,0 +1,24 @@
+const seedBooks = [
+  { id: 1, title: 'The Left Hand of Darkness', author: 'Ursula K. Le Guin', year: 1969, genre: 'fiction', read: true, rating: 5 },
+  { id: 2, title: 'The Hobbit', author: 'J.R.R. Tolkien', year: 1937, genre: 'fantasy', read: true, rating: 4 },
+  { id: 3, title: 'A Brief History of Time', author: 'Stephen Hawking', year: 1988, genre: 'science', read: false, rating: null },
+  { id: 4, title: 'The Diary of a Young Girl', author: 'Anne Frank', year: 1947, genre: 'history', read: true, rating: 5 },
+  { id: 5, title: 'The Creative Act', author: 'Rick Rubin', year: 2023, genre: 'non-fiction', read: false, rating: null },
+  { id: 6, title: 'A Wizard of Earthsea', author: 'Ursula K. Le Guin', year: 1968, genre: 'fantasy', read: true, rating: null },
+];
+
+let books = [...seedBooks];
+
+function waitForStore() {
+  return new Promise((resolve) => setTimeout(resolve, 30));
+}
+
+export async function listBooks() {
+  await waitForStore();
+  return books;
+}
+
+export async function findBook(id) {
+  await waitForStore();
+  return books.find((book) => book.id === id);
+}
