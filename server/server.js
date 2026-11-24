@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { createBook, deleteBook, findBook, queryBooks, updateBook } from './booksStore.js';
+import { createBook, deleteBook, findBook, getStats, queryBooks, updateBook } from './booksStore.js';
 import { parseBookId, RequestError, validateBook, validateBookQuery, validateBodyObject } from './validate.js';
 
 const app = express();
@@ -49,10 +49,33 @@ app.delete('/api/books/:id', async (req, res) => {
   return res.status(204).end();
 });
 
+app.get('/api/stats', async (req, res) => res.json(await getStats()));
+
+app.get('/api/crash', async () => {
+  throw new Error('Intentional async error for the README experiment');
+});
+
+app.use('/api', async (req, res) => res.status(404).json({ error: 'Not found' }));
+
 app.use((error, req, res, next) => {
+  if (error instanceof RequestError) {
+    return res.status(error.status).json({ error: error.message });
+  }
+  if (error.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Malformed JSON: check the request body' });
+  }
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body is too large' });
+  }
+  if (error.type === 'charset.unsupported' || error.type === 'encoding.unsupported') {
+    return res.status(415).json({ error: 'Unsupported request body encoding' });
+  }
+  if (error instanceof URIError && error.status === 400) {
+    return res.status(400).json({ error: 'Malformed URL encoding' });
+  }
+  console.error(error);
   if (res.headersSent) return next(error);
-  if (error instanceof RequestError) return res.status(error.status).json({ error: error.message });
-  return next(error);
+  return res.status(500).json({ error: 'Something went wrong' });
 });
 
 app.listen(port, () => {

@@ -89,3 +89,18 @@ export async function deleteBook(id) {
   books = remaining;
   return true;
 }
+
+export async function getStats() {
+  const all = await listBooks();
+  const read = all.filter((book) => book.read).length;
+  const ratings = all.filter((book) => book.rating !== null).map((book) => book.rating);
+  const byGenre = {};
+  for (const book of all) {
+    byGenre[book.genre] = (byGenre[book.genre] ?? 0) + 1;
+  }
+  const averageRating = ratings.length === 0
+    ? null
+    : Number((ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1));
+
+  return { total: all.length, read, unread: all.length - read, averageRating, byGenre };
+}
