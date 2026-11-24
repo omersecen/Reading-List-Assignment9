@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { findBook } from './booksStore.js';
-import { parseBookId, RequestError } from './validate.js';
+import { findBook, queryBooks } from './booksStore.js';
+import { parseBookId, RequestError, validateBookQuery } from './validate.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -9,6 +9,11 @@ const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 app.use(cors({ origin: [clientOrigin] }));
 app.use(express.json());
+
+app.get('/api/books', async (req, res) => {
+  const query = validateBookQuery(req.query);
+  return res.json(await queryBooks(query));
+});
 
 app.get('/api/books/:id', async (req, res) => {
   const id = parseBookId(req.params.id);

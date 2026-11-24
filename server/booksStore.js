@@ -22,3 +22,28 @@ export async function findBook(id) {
   await waitForStore();
   return books.find((book) => book.id === id);
 }
+
+function compareBooks(first, second, sort, order) {
+  const a = first[sort];
+  const b = second[sort];
+  if (a === b) return first.id - second.id;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  const difference = typeof a === 'string'
+    ? a.localeCompare(b, 'en', { sensitivity: 'base' })
+    : a - b;
+  if (difference === 0) return first.id - second.id;
+  return order === 'desc' ? -difference : difference;
+}
+
+export async function queryBooks({ genre, read, q, sort, order, limit, page }) {
+  const all = await listBooks();
+  const matches = all.filter((book) => (
+    (genre === undefined || book.genre === genre)
+    && (read === undefined || book.read === read)
+    && (book.title.toLowerCase().includes(q) || book.author.toLowerCase().includes(q))
+  ));
+  matches.sort((first, second) => compareBooks(first, second, sort, order));
+  const offset = (page - 1) * limit;
+  return matches.slice(offset, offset + limit);
+}

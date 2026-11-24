@@ -56,3 +56,51 @@ export function validateBook(body) {
 
   return { title: trimmedTitle, author: trimmedAuthor, year, genre, read, rating };
 }
+
+const SORT_FIELDS = ['title', 'author', 'year', 'rating'];
+const QUERY_FIELDS = ['genre', 'read', 'q', 'sort', 'order', 'limit', 'page'];
+
+function queryInteger(query, name, fallback, maximum) {
+  if (query[name] === undefined) return fallback;
+  const value = positiveInteger(query[name]);
+  if (value === null || value > maximum) {
+    const range = name === 'limit' ? 'an integer from 1 to 50' : 'a positive integer';
+    throw new RequestError(400, `${name} must be ${range}`);
+  }
+  return value;
+}
+
+export function validateBookQuery(query) {
+  for (const [name, value] of Object.entries(query)) {
+    if (typeof value !== 'string') {
+      throw new RequestError(400, `Send ${name} only once`);
+    }
+    if (!QUERY_FIELDS.includes(name)) {
+      throw new RequestError(400, `Unknown query parameter: ${name}`);
+    }
+  }
+
+  const { genre, read, q = '', sort, order = 'asc' } = query;
+  if (genre !== undefined && !GENRES.includes(genre)) {
+    throw new RequestError(400, `genre must be one of: ${GENRES.join(', ')}`);
+  }
+  if (read !== undefined && read !== 'true' && read !== 'false') {
+    throw new RequestError(400, 'read must be true or false');
+  }
+  if (sort !== undefined && !SORT_FIELDS.includes(sort)) {
+    throw new RequestError(400, `sort must be one of: ${SORT_FIELDS.join(', ')}`);
+  }
+  if (order !== 'asc' && order !== 'desc') {
+    throw new RequestError(400, 'order must be asc or desc');
+  }
+
+  return {
+    genre,
+    read: read === undefined ? undefined : read === 'true',
+    q: q.toLowerCase(),
+    sort: sort ?? 'id',
+    order,
+    limit: queryInteger(query, 'limit', 50, 50),
+    page: queryInteger(query, 'page', 1, Number.MAX_SAFE_INTEGER),
+  };
+}
