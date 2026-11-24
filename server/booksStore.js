@@ -81,3 +81,11 @@ export async function updateBook(id, buildFields) {
   books = books.map((item) => (item.id === id ? book : item));
   return book;
 }
+
+export async function deleteBook(id) {
+  await waitForStore();
+  const remaining = books.filter((book) => book.id !== id);
+  if (remaining.length === books.length) return false;
+  books = remaining;
+  return true;
+}
