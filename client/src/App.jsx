@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getStats, listBooks } from './api/books.js';
+import { createBook, getStats, listBooks, replaceBook } from './api/books.js';
 import BookFilters from './components/BookFilters.jsx';
+import BookForm from './components/BookForm.jsx';
 import BookList from './components/BookList.jsx';
 import ReadingStats from './components/ReadingStats.jsx';
 
@@ -12,6 +13,9 @@ export default function App() {
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState(null);
   const [statsResult, setStatsResult] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [formVersion, setFormVersion] = useState(0);
+  const [saving, setSaving] = useState(false);
   const loading = result?.filters !== filters || result?.revision !== revision;
   const books = result?.filters === filters ? result.books : [];
   const listError = loading ? '' : result.error;
@@ -58,6 +62,22 @@ export default function App() {
     setRevision((current) => current + 1);
   }
 
+  async function saveChange(action) {
+    setSaving(true);
+    try {
+      await action();
+      refresh();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveForm(fields) {
+    await saveChange(() => editing ? replaceBook(editing.id, fields) : createBook(fields));
+    setEditing(null);
+    setFormVersion((version) => version + 1);
+  }
+
   return (
     <>
       <header className="masthead">
@@ -69,22 +89,33 @@ export default function App() {
           error={statsResult?.revision === revision ? statsResult.error : ''}
           loading={statsResult?.revision !== revision}
         />
-        <section className="library" aria-labelledby="library-heading">
-          <h2 id="library-heading">Your books</h2>
-          <BookFilters
-            filters={filters}
-            onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value, page: 1 }))}
+        <div className="workspace">
+          <section className="library" aria-labelledby="library-heading">
+            <h2 id="library-heading">Your books</h2>
+            <BookFilters
+              filters={filters}
+              onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value, page: 1 }))}
+            />
+            <BookList
+              books={books}
+              loading={loading}
+              error={listError}
+              page={filters.page}
+              pageSize={PAGE_SIZE}
+              onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+              onRetry={refresh}
+              onEdit={setEditing}
+              saving={saving || loading}
+            />
+          </section>
+          <BookForm
+            key={`${editing?.id ?? 'new'}-${formVersion}`}
+            book={editing}
+            saving={saving}
+            onSave={saveForm}
+            onCancel={() => setEditing(null)}
           />
-          <BookList
-            books={books}
-            loading={loading}
-            error={listError}
-            page={filters.page}
-            pageSize={PAGE_SIZE}
-            onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
-            onRetry={refresh}
-          />
-        </section>
+        </div>
       </main>
     </>
   );

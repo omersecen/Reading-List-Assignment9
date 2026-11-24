@@ -1,6 +1,6 @@
 import { genres } from '../genres.js';
 
-export default function BookList({ books, loading, error, page, pageSize, onPageChange, onRetry }) {
+export default function BookList({ books, loading, error, page, pageSize, onPageChange, onRetry, onEdit, saving }) {
   return (
     <>
       {loading && <p className="notice" role="status">Loading books…</p>}
@@ -25,6 +25,7 @@ export default function BookList({ books, loading, error, page, pageSize, onPage
                 {book.read ? 'Read' : 'Unread'}
               </span>
               {book.rating !== null && <p>{book.rating} / 5</p>}
+              <button type="button" className="button" disabled={saving} onClick={() => onEdit(book)} aria-label={`Edit ${book.title}`}>Edit</button>
             </li>
           ))}
         </ul>

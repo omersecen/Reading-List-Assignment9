@@ -98,3 +98,19 @@ input, select, .button {
 @media (max-width: 600px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
 }
+
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 22px; align-items: start; }
+.form-panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.form-panel fieldset { display: grid; gap: 12px; border: 0; min-width: 0; padding: 0; margin: 12px 0 0; }
+.form-grid { display: grid; gap: 8px; grid-template-columns: 1fr 1.25fr; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.check-field { display: flex; align-items: center; gap: 8px; }
+.check-field input { min-height: 0; margin: 0; accent-color: var(--green); }
+.form-error { font-size: 0.88rem; }
+.button.primary { background: var(--green); color: white; border-color: var(--green); }
+.button.primary:hover:not(:disabled) { background: var(--dark-green); }
+
+@media (max-width: 860px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .form-panel { grid-row: 1; }
+}
