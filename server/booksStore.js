@@ -1,3 +1,5 @@
+import { RequestError } from './validate.js';
+
 const seedBooks = [
   { id: 1, title: 'The Left Hand of Darkness', author: 'Ursula K. Le Guin', year: 1969, genre: 'fiction', read: true, rating: 5 },
   { id: 2, title: 'The Hobbit', author: 'J.R.R. Tolkien', year: 1937, genre: 'fantasy', read: true, rating: 4 },
@@ -8,6 +10,7 @@ const seedBooks = [
 ];
 
 let books = [...seedBooks];
+let nextId = seedBooks.length + 1;
 
 function waitForStore() {
   return new Promise((resolve) => setTimeout(resolve, 30));
@@ -46,4 +49,35 @@ export async function queryBooks({ genre, read, q, sort, order, limit, page }) {
   matches.sort((first, second) => compareBooks(first, second, sort, order));
   const offset = (page - 1) * limit;
   return matches.slice(offset, offset + limit);
+}
+
+function checkDuplicate(candidate, currentId) {
+  const title = candidate.title.toLowerCase();
+  const author = candidate.author.toLowerCase();
+  const duplicate = books.some((book) => (
+    book.id !== currentId
+    && book.title.toLowerCase() === title
+    && book.author.toLowerCase() === author
+  ));
+  if (duplicate) throw new RequestError(409, 'A book with this title and author already exists');
+}
+
+export async function createBook(fields) {
+  await waitForStore();
+  checkDuplicate(fields);
+  const book = { id: nextId, ...fields };
+  nextId += 1;
+  books = [...books, book];
+  return book;
+}
+
+export async function updateBook(id, buildFields) {
+  await waitForStore();
+  const existing = books.find((book) => book.id === id);
+  if (!existing) return undefined;
+  const fields = buildFields(existing);
+  checkDuplicate(fields, id);
+  const book = { id, ...fields };
+  books = books.map((item) => (item.id === id ? book : item));
+  return book;
 }

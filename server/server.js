@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { findBook, queryBooks } from './booksStore.js';
-import { parseBookId, RequestError, validateBookQuery } from './validate.js';
+import { createBook, findBook, queryBooks, updateBook } from './booksStore.js';
+import { parseBookId, RequestError, validateBook, validateBookQuery } from './validate.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -18,6 +18,18 @@ app.get('/api/books', async (req, res) => {
 app.get('/api/books/:id', async (req, res) => {
   const id = parseBookId(req.params.id);
   const book = await findBook(id);
+  if (!book) return res.status(404).json({ error: 'Book not found' });
+  return res.json(book);
+});
+
+app.post('/api/books', async (req, res) => {
+  const book = await createBook(validateBook(req.body));
+  return res.location(`/api/books/${book.id}`).status(201).json(book);
+});
+
+app.put('/api/books/:id', async (req, res) => {
+  const id = parseBookId(req.params.id);
+  const book = await updateBook(id, () => validateBook(req.body));
   if (!book) return res.status(404).json({ error: 'Book not found' });
   return res.json(book);
 });
