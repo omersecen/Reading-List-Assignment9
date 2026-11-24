@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { listBooks } from './api/books.js';
+import { getStats, listBooks } from './api/books.js';
 import BookFilters from './components/BookFilters.jsx';
 import BookList from './components/BookList.jsx';
+import ReadingStats from './components/ReadingStats.jsx';
 
 const PAGE_SIZE = 20;
 const initialFilters = { q: '', genre: '', read: '', sort: '', order: 'asc', page: 1 };
@@ -10,6 +11,7 @@ export default function App() {
   const [filters, setFilters] = useState(initialFilters);
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState(null);
+  const [statsResult, setStatsResult] = useState(null);
   const loading = result?.filters !== filters || result?.revision !== revision;
   const books = result?.filters === filters ? result.books : [];
   const listError = loading ? '' : result.error;
@@ -33,6 +35,25 @@ export default function App() {
     return () => controller.abort();
   }, [filters, revision]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    async function load() {
+      try {
+        const stats = await getStats(signal);
+        if (!signal.aborted) setStatsResult({ revision, stats, error: '' });
+      } catch (error) {
+        if (!signal.aborted && error.name !== 'AbortError') {
+          setStatsResult({ revision, stats: null, error: error.message });
+        }
+      }
+    }
+
+    load();
+    return () => controller.abort();
+  }, [revision]);
+
   function refresh() {
     setRevision((current) => current + 1);
   }
@@ -43,6 +64,11 @@ export default function App() {
         <div className="container"><h1>Reading List</h1></div>
       </header>
       <main className="container main-content">
+        <ReadingStats
+          stats={statsResult?.stats}
+          error={statsResult?.revision === revision ? statsResult.error : ''}
+          loading={statsResult?.revision !== revision}
+        />
         <section className="library" aria-labelledby="library-heading">
           <h2 id="library-heading">Your books</h2>
           <BookFilters
