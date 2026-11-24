@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createBook, getStats, listBooks, replaceBook } from './api/books.js';
+import { createBook, deleteBook, getStats, listBooks, replaceBook, updateBook } from './api/books.js';
 import BookFilters from './components/BookFilters.jsx';
 import BookForm from './components/BookForm.jsx';
 import BookList from './components/BookList.jsx';
@@ -16,6 +16,7 @@ export default function App() {
   const [editing, setEditing] = useState(null);
   const [formVersion, setFormVersion] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState('');
   const loading = result?.filters !== filters || result?.revision !== revision;
   const books = result?.filters === filters ? result.books : [];
   const listError = loading ? '' : result.error;
@@ -78,6 +79,31 @@ export default function App() {
     setFormVersion((version) => version + 1);
   }
 
+  async function changeBook(action) {
+    setActionError('');
+    try {
+      await saveChange(action);
+    } catch (error) {
+      setActionError(error.message);
+    }
+  }
+
+  function toggleRead(book) {
+    const fields = book.read ? { read: false, rating: null } : { read: true };
+    return changeBook(() => updateBook(book.id, fields));
+  }
+
+  async function removeBook(book) {
+    if (!window.confirm(`Delete “${book.title}” from your reading list?`)) return;
+    await changeBook(async () => {
+      await deleteBook(book.id);
+      if (editing?.id === book.id) setEditing(null);
+      if (filters.page > 1 && books.length === 1) {
+        setFilters((current) => ({ ...current, page: current.page - 1 }));
+      }
+    });
+  }
+
   return (
     <>
       <header className="masthead">
@@ -96,6 +122,7 @@ export default function App() {
               filters={filters}
               onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value, page: 1 }))}
             />
+            {actionError && <p className="notice error" role="alert">{actionError}</p>}
             <BookList
               books={books}
               loading={loading}
@@ -105,6 +132,9 @@ export default function App() {
               onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
               onRetry={refresh}
               onEdit={setEditing}
+              onToggle={toggleRead}
+              onRate={(book, rating) => changeBook(() => updateBook(book.id, { rating }))}
+              onDelete={removeBook}
               saving={saving || loading}
             />
           </section>

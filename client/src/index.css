@@ -114,3 +114,12 @@ input, select, .button {
   .workspace { grid-template-columns: minmax(0, 1fr); }
   .form-panel { grid-row: 1; }
 }
+
+.book-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.book-actions .button, .book-actions select { font-size: 0.8rem; }
+.button.danger { color: var(--red); }
+
+@media (max-width: 1120px) {
+  .book { flex-wrap: wrap; }
+  .book-actions { width: 100%; }
+}

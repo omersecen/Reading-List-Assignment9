@@ -1,6 +1,6 @@
 import { genres } from '../genres.js';
 
-export default function BookList({ books, loading, error, page, pageSize, onPageChange, onRetry, onEdit, saving }) {
+export default function BookList({ books, loading, error, page, pageSize, onPageChange, onRetry, onEdit, onToggle, onRate, onDelete, saving }) {
   return (
     <>
       {loading && <p className="notice" role="status">Loading books…</p>}
@@ -24,8 +24,22 @@ export default function BookList({ books, loading, error, page, pageSize, onPage
               <span className={book.read ? 'book-status is-read' : 'book-status'}>
                 {book.read ? 'Read' : 'Unread'}
               </span>
-              {book.rating !== null && <p>{book.rating} / 5</p>}
-              <button type="button" className="button" disabled={saving} onClick={() => onEdit(book)} aria-label={`Edit ${book.title}`}>Edit</button>
+              <div className="book-actions">
+                <select
+                  aria-label={`Rating for ${book.title}`}
+                  value={book.rating ?? ''}
+                  disabled={saving || !book.read}
+                  onChange={(event) => onRate(book, event.target.value === '' ? null : Number(event.target.value))}
+                >
+                  <option value="">Unrated</option>
+                  {[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} / 5</option>)}
+                </select>
+                <button type="button" className="button" disabled={saving} onClick={() => onToggle(book)} aria-label={`Mark ${book.title} ${book.read ? 'unread' : 'read'}`}>
+                  Mark {book.read ? 'unread' : 'read'}
+                </button>
+                <button type="button" className="button" disabled={saving} onClick={() => onEdit(book)} aria-label={`Edit ${book.title}`}>Edit</button>
+                <button type="button" className="button danger" disabled={saving} onClick={() => onDelete(book)} aria-label={`Delete ${book.title}`}>Delete</button>
+              </div>
             </li>
           ))}
         </ul>
