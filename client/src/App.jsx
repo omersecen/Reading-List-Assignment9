@@ -99,7 +99,7 @@ export default function App() {
       await deleteBook(book.id);
       if (editing?.id === book.id) setEditing(null);
       if (filters.page > 1 && books.length === 1) {
-        setFilters((current) => ({ ...current, page: current.page - 1 }));
+        setFilters((current) => current === filters ? { ...current, page: current.page - 1 } : current);
       }
     });
   }
@@ -107,7 +107,10 @@ export default function App() {
   return (
     <>
       <header className="masthead">
-        <div className="container"><h1>Reading List</h1></div>
+        <div className="container masthead-inner">
+          <h1>Reading List</h1>
+          <a className="mobile-add" href="#book-form" onClick={() => { if (!saving) setEditing(null); }}>Add a book</a>
+        </div>
       </header>
       <main className="container main-content">
         <ReadingStats

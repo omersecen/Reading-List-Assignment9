@@ -23,7 +23,7 @@ export async function listBooks() {
 
 export async function findBook(id) {
   await waitForStore();
-  return books.find((book) => book.id === id);
+  return books.find((book) => book.id === id) ?? null;
 }
 
 function compareBooks(first, second, sort, order) {

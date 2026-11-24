@@ -110,9 +110,21 @@ input, select, .button {
 .button.primary { background: var(--green); color: white; border-color: var(--green); }
 .button.primary:hover:not(:disabled) { background: var(--dark-green); }
 
+.mobile-add {
+  display: none;
+  border: 1px solid #acc0b2;
+  border-radius: 6px;
+  padding: 7px 10px;
+  color: var(--paper);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.mobile-add:hover { background: #2b5141; }
+
 @media (max-width: 860px) {
   .workspace { grid-template-columns: minmax(0, 1fr); }
-  .form-panel { grid-row: 1; }
+  .masthead-inner { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+  .mobile-add { display: inline-flex; }
 }
 
 .book-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }

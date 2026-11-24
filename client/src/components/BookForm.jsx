@@ -28,7 +28,7 @@ export default function BookForm({ book, saving, onSave, onCancel }) {
   }
 
   return (
-    <section className="form-panel" aria-labelledby="form-heading">
+    <section id="book-form" className="form-panel" aria-labelledby="form-heading">
       <h2 id="form-heading">{book ? 'Edit book' : 'Add a book'}</h2>
       <form onSubmit={submit}>
         <fieldset disabled={saving}>

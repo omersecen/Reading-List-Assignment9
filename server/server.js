@@ -7,8 +7,12 @@ const app = express();
 const port = Number(process.env.PORT || 3000);
 const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
-app.use(cors({ origin: [clientOrigin] }));
+app.use(cors({ origin: [clientOrigin], preflightContinue: true }));
 app.use(express.json());
+
+app.options(['/api/books', '/api/books/:id', '/api/stats'], async (req, res) => {
+  return res.status(204).end();
+});
 
 app.get('/api/books', async (req, res) => {
   const query = validateBookQuery(req.query);
@@ -45,15 +49,12 @@ app.patch('/api/books/:id', async (req, res) => {
 
 app.delete('/api/books/:id', async (req, res) => {
   const id = parseBookId(req.params.id);
-  if (!await deleteBook(id)) return res.status(404).json({ error: 'Book not found' });
+  const deleted = await deleteBook(id);
+  if (!deleted) return res.status(404).json({ error: 'Book not found' });
   return res.status(204).end();
 });
 
 app.get('/api/stats', async (req, res) => res.json(await getStats()));
-
-app.get('/api/crash', async () => {
-  throw new Error('Intentional async error for the README experiment');
-});
 
 app.use('/api', async (req, res) => res.status(404).json({ error: 'Not found' }));
 
