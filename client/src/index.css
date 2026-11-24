@@ -1,0 +1,34 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #24352d;
+  background: #f5f4ed;
+  font-synthesis: none;
+  --paper: #fffefa;
+  --ink: #24352d;
+  --muted: #536259;
+  --line: #dcded2;
+  --green: #24583f;
+  --dark-green: #1e3d31;
+  --red: #8c302b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; min-width: 280px; }
+h1, h2, h3, p { margin: 0; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.55; }
+:focus-visible { outline: 3px solid #8a5c18; outline-offset: 2px; }
+
+.container { width: min(1160px, 100% - 48px); margin-inline: auto; }
+.masthead { background: var(--dark-green); color: var(--paper); padding-block: 34px; }
+h1, h2, .book-title { font-family: Georgia, 'Times New Roman', serif; }
+h1 { font-weight: 500; font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -0.045em; }
+h2 { font-weight: 500; font-size: 1.8rem; letter-spacing: -0.025em; }
+.main-content { padding-block: 28px 56px; }
+
+@media (max-width: 600px) {
+  .container { width: calc(100% - 28px); }
+  .masthead { padding-block: 24px; }
+  .main-content { padding-top: 20px; }
+}
